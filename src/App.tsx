@@ -3,16 +3,27 @@ import "./App.css";
 
 const ASCII_CHARS = "@%#*+=-:. ";
 
+
+//indie game palette
 const PALETTE: [number, number, number][] = [
-  [0, 0, 0],
-  [255, 255, 255],
-  [255, 0, 0],
-  [0, 255, 0],
-  [0, 0, 255],
-  [255, 255, 0],
-  [255, 0, 255],
-  [0, 255, 255],
+  [0, 0, 0],       
+  [34, 32, 52],   
+  [69, 40, 60],    
+  [102, 57, 49],   
+  [143, 86, 59],   
+  [223, 113, 38], 
+  [217, 160, 102],
+  [238, 195, 154], 
+  [251, 242, 54],  
+  [153, 229, 80],  
+  [106, 190, 48],  
+  [55, 148, 110],  
+  [75, 105, 186],  
+  [91, 110, 225],  
+  [203, 219, 252], 
+  [255, 255, 255], 
 ];
+
 
 function buildAsciiLUT(chars: string) {
   const lut = new Array(256);
@@ -60,6 +71,30 @@ function drawAsciiFrame(
 
   output.textContent = result;
 }
+function nearestColor(
+  r: number,
+  g: number,
+  b: number,
+  palette: [number, number, number][]
+) {
+  let minDist = Infinity;
+  let best = palette[0];
+
+  for (const [pr, pg, pb] of palette) {
+    const dr = r - pr;
+    const dg = g - pg;
+    const db = b - pb;
+    const dist = dr * dr + dg * dg + db * db;
+
+    if (dist < minDist) {
+      minDist = dist;
+      best = [pr, pg, pb];
+    }
+  }
+
+  return best;
+}
+
 
 function drawPixelFrame(
   source: HTMLImageElement | HTMLVideoElement,
@@ -85,13 +120,17 @@ function drawPixelFrame(
   const data = imageData.data;
 
   for (let i = 0; i < data.length; i += 4) {
-    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    const idx = Math.floor((brightness / 255) * (palette.length - 1));
-    const [r, g, b] = palette[idx];
-    data[i] = r;
-    data[i + 1] = g;
-    data[i + 2] = b;
-  }
+  const r = data[i];
+  const g = data[i + 1];
+  const b = data[i + 2];
+
+  const [pr, pg, pb] = nearestColor(r, g, b, palette);
+
+  data[i] = pr;
+  data[i + 1] = pg;
+  data[i + 2] = pb;
+}
+
 
   ctx.putImageData(imageData, 0, 0);
 }
